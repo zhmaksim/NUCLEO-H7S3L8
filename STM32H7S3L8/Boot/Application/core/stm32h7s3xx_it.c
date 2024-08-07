@@ -18,6 +18,7 @@
 /* Includes ---------------------------------------------------------------- */
 
 #include "stm32h7s3xx_it.h"
+#include "systick.h"
 
 /* Private macros ---------------------------------------------------------- */
 
@@ -63,6 +64,6 @@ void UsageFault_Handler( void )
 
 void SysTick_Handler( void )
 {
-
+    systick_it_handler();
 }
 /* ------------------------------------------------------------------------- */
