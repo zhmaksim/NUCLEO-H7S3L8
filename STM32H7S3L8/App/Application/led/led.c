@@ -17,7 +17,7 @@
 
 /* Includes ---------------------------------------------------------------- */
 
-#include "stm32h7s3xx_it.h"
+#include "led.h"
 
 /* Private macros ---------------------------------------------------------- */
 
@@ -27,50 +27,66 @@
 
 /* Private variables ------------------------------------------------------- */
 
+struct led led[ LED_COUNT ];
+
 /* Private function prototypes --------------------------------------------- */
 
 /* Private user code ------------------------------------------------------- */
 
-void NMI_Handler( void )
+/**
+ * Инициализировать светодиоды.
+ */
+void led_init( void )
 {
-    error();
+    /* Green */
+    led[ LED_GREEN ].gpio = GPIOD;
+    led[ LED_GREEN ].pin = GPIO_ODR_OD10;
+
+    /* Yellow */
+    led[ LED_YELLOW ].gpio = GPIOD;
+    led[ LED_YELLOW ].pin = GPIO_ODR_OD13;
+
+    /* Red */
+    led[ LED_RED ].gpio = GPIOB;
+    led[ LED_RED ].pin = GPIO_ODR_OD7;
 }
 /* ------------------------------------------------------------------------- */
 
-void HardFault_Handler( void )
+/**
+ * Включить светодиод.
+ *
+ * @param[in] id Идентификатор светодиода.
+ */
+void led_on( uint8_t id )
 {
-    error();
+    assert( id < LED_COUNT );
+
+    SET_BIT( led[ id ].gpio->BSRR, led[ id ].pin );
 }
 /* ------------------------------------------------------------------------- */
 
-void MemManage_Handler( void )
+/**
+ * Выключить светодиод.
+ *
+ * @param[in] id Идентификатор светодиода.
+ */
+void led_off( uint8_t id )
 {
-    error();
+    assert( id < LED_COUNT );
+
+    SET_BIT( led[ id ].gpio->BSRR, led[ id ].pin << 16 );
 }
 /* ------------------------------------------------------------------------- */
 
-void BusFault_Handler( void )
+/**
+ * Переключить состояние светодиода.
+ *
+ * @param[in] id Идентификатор светодиода.
+ */
+void led_toggle( uint8_t id )
 {
-    error();
-}
-/* ------------------------------------------------------------------------- */
+    assert( id < LED_COUNT );
 
-void UsageFault_Handler( void )
-{
-    error();
-}
-/* ------------------------------------------------------------------------- */
-
-void SysTick_Handler( void )
-{
-    /* Обработать системный таймер FreeRTOS */
-    #if( INCLUDE_xTaskGetSchedulerState == 1 )
-        if( xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED )
-        {
-    #endif /* INCLUDE_xTaskGetSchedulerState */
-            xPortSysTickHandler();
-    #if( INCLUDE_xTaskGetSchedulerState == 1 )
-        }
-    #endif /* INCLUDE_xTaskGetSchedulerState */
+    XOR_BIT( led[ id ].gpio->ODR, led[ id ].pin );
 }
 /* ------------------------------------------------------------------------- */

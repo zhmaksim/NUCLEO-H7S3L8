@@ -31,6 +31,8 @@
 
 static void gpio_octospi_init( void );
 
+static void gpio_led_init( void );
+
 /* Private user code ------------------------------------------------------- */
 
 /**
@@ -40,9 +42,12 @@ void gpio_init( void )
 {
     /* Включить тактирование */
     SET_BIT( RCC->AHB4ENR, RCC_AHB4ENR_GPIOAEN_Msk );
+    SET_BIT( RCC->AHB4ENR, RCC_AHB4ENR_GPIOBEN_Msk );
+    SET_BIT( RCC->AHB4ENR, RCC_AHB4ENR_GPIODEN_Msk );
     SET_BIT( RCC->AHB4ENR, RCC_AHB4ENR_GPIONEN_Msk );
 
     gpio_octospi_init();
+    gpio_led_init();
 }
 /* ------------------------------------------------------------------------- */
 
@@ -155,5 +160,62 @@ static void gpio_octospi_init( void )
               | 0x09 << GPIO_AFRH_AFSEL9_Pos
               | 0x09 << GPIO_AFRH_AFSEL10_Pos
               | 0x09 << GPIO_AFRH_AFSEL11_Pos );
+}
+/* ------------------------------------------------------------------------- */
+
+static void gpio_led_init( void )
+{
+    /* LD1 GREEN GPIOD10
+     * LD2 YELLOW GPIOD13
+     * LD3 RED GPIOB7 */
+
+    /* GPIOB --------------------------------------------------------------- */
+
+    /* Настроить режим работы = Output */
+    MODIFY_REG( GPIOB->MODER,
+                GPIO_MODER_MODE7_Msk,
+                0x01 << GPIO_MODER_MODE7_Pos );
+
+    /* Настроить тип вывода = Push-Pull */
+    CLEAR_BIT( GPIOB->OTYPER, GPIO_OTYPER_OT7_Msk );
+
+    /* Настроить скорость работы вывода = Low Speed */
+    CLEAR_BIT( GPIOB->OSPEEDR, GPIO_OSPEEDR_OSPEED7_Msk );
+
+    /* Настроить подтяжку сигнала = Pull-Up */
+    MODIFY_REG( GPIOB->PUPDR,
+                GPIO_PUPDR_PUPD7_Msk,
+                0x02 << GPIO_PUPDR_PUPD7_Pos );
+
+    /* --------------------------------------------------------------------- */
+
+
+    /* GPIOD --------------------------------------------------------------- */
+
+    /* Настроить режим работы = Output */
+    MODIFY_REG( GPIOD->MODER,
+                GPIO_MODER_MODE10_Msk
+              | GPIO_MODER_MODE13_Msk,
+                0x01 << GPIO_MODER_MODE10_Pos
+              | 0x01 << GPIO_MODER_MODE13_Pos );
+
+    /* Настроить тип вывода = Push-Pull */
+    CLEAR_BIT( GPIOD->OTYPER,
+               GPIO_OTYPER_OT10_Msk
+             | GPIO_OTYPER_OT13_Msk );
+
+    /* Настроить скорость работы вывода = Low Speed */
+    CLEAR_BIT( GPIOD->OSPEEDR,
+               GPIO_OSPEEDR_OSPEED10_Msk
+             | GPIO_OSPEEDR_OSPEED13_Msk );
+
+    /* Настроить подтяжку сигнала = Pull-Up */
+    MODIFY_REG( GPIOD->PUPDR,
+                GPIO_PUPDR_PUPD10_Msk
+              | GPIO_PUPDR_PUPD13_Msk,
+                0x02 << GPIO_PUPDR_PUPD10_Pos
+              | 0x02 << GPIO_PUPDR_PUPD13_Pos );
+
+    /* --------------------------------------------------------------------- */
 }
 /* ------------------------------------------------------------------------- */
