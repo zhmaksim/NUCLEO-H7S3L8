@@ -24,6 +24,7 @@
 #include "rcc.h"
 #include "gpio.h"
 #include "xspi.h"
+#include "mx25uw.h"
 
 /* Private macros ---------------------------------------------------------- */
 
@@ -40,6 +41,8 @@ static void setup_hardware( void );
 static void setup_vector_table( void );
 
 static void setup_fpu( void );
+
+static void jump_app( void );
 
 static void app_main( void );
 
@@ -63,8 +66,22 @@ void error( void )
 
 static void app_main( void )
 {
-    for( ;; )
-        ;
+    if( mx25uw_init() != SUCCESS )
+    {
+        error();
+    }
+    else if( mx25uw_setup_opi_dtr() != SUCCESS )
+    {
+        error();
+    }
+
+    xspi_setup_max_frequency();
+
+    if( mx25uw_setup_memory_mapped_mode() != SUCCESS )
+    {
+        error();
+    }
+    else jump_app();
 }
 /* ------------------------------------------------------------------------- */
 
@@ -98,5 +115,21 @@ static void setup_vector_table( void  )
 static void setup_fpu( void )
 {
     SET_BIT( SCB->CPACR, ( 0x03 << 20 ) | ( 0x03 << 22 ) );
+}
+/* ------------------------------------------------------------------------- */
+
+static void jump_app( void )
+{
+    __disable_irq();
+
+    __ISB();
+    __DSB();
+
+    typedef void ( *p_function )( void );
+    p_function app = ( p_function ) *( uint32_t * )( 0x70000000 + 4 );
+
+    __set_MSP( *( uint32_t * ) 0x70000000 );
+
+    app();
 }
 /* ------------------------------------------------------------------------- */
