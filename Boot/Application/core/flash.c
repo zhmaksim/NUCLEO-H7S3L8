@@ -17,9 +17,6 @@
 
 /* Includes ---------------------------------------------------------------- */
 
-#include "main.h"
-#include "systick.h"
-#include "pwr.h"
 #include "flash.h"
 
 /* Private macros ---------------------------------------------------------- */
@@ -32,62 +29,36 @@
 
 /* Private function prototypes --------------------------------------------- */
 
-static void setup_hardware(void);
-
-static void setup_vector_table(void);
-
-static void setup_fpu(void);
-
-static void app_main(void);
-
 /* Private user code ------------------------------------------------------- */
 
-int main(void)
+void flash_init(void)
 {
-    setup_hardware();
-    app_main();
-}
-/* ------------------------------------------------------------------------- */
+    /* Настроить LATENCY = 7WS и WRHIGHFREQ = 3 */
+    WRITE_REG(FLASH->ACR, 0x07 << FLASH_ACR_LATENCY_Pos
+                        | 0x03 << FLASH_ACR_WRHIGHFREQ_Pos);
 
-void error(void)
-{
-    __disable_irq();
+    /* Настроить High Speed Low Voltage для XSPI2 */
+    if (!READ_BIT(FLASH->OBW1SR, FLASH_OBW1SR_XSPI2_HSLV_Msk)) {
+        /* Разблокировать OPTCR */
+        WRITE_REG(FLASH->OPTKEYR, 0x08192A3B);
+        WRITE_REG(FLASH->OPTKEYR, 0x4C5D6E7F);
 
-    while (true) {}
-}
-/* ------------------------------------------------------------------------- */
+        while (READ_BIT(FLASH->OPTCR, FLASH_OPTCR_OPTLOCK_Msk)) {}
 
-static void app_main(void)
-{
-    while (true) {}
-}
-/* ------------------------------------------------------------------------- */
+        /* Включить запись опций */
+        SET_BIT(FLASH->OPTCR, FLASH_OPTCR_PG_OPT_Msk);
 
-static void setup_hardware(void)
-{
-    setup_vector_table();
-    setup_fpu();
+        /* Записать High Speed Low Voltage для XSPI2 */
+        SET_BIT(FLASH->OBW1SRP, FLASH_OBW1SRP_XSPI2_HSLV_Msk);
 
-    systick_init(64000000);
-    pwr_init();
-    flash_init();
-}
-/* ------------------------------------------------------------------------- */
+        /* Ожидание завершения записи */
+        while (READ_BIT(FLASH->SR, FLASH_SR_QW_Msk)) {}
 
-static void setup_vector_table(void)
-{
-    __disable_irq();
-    __set_PRIMASK(1);
+        /* Выключить запись опций */
+        CLEAR_BIT(FLASH->OPTCR, FLASH_OPTCR_PG_OPT_Msk);
 
-    WRITE_REG(SCB->VTOR, 0x08000000);
-
-    __set_PRIMASK(0);
-    __enable_irq();
-}
-/* ------------------------------------------------------------------------- */
-
-static void setup_fpu(void)
-{
-    SET_BIT(SCB->CPACR, (0x03 << 20) | (0x03 << 22));
+        /* Заблокировать OPTCR */
+        SET_BIT(FLASH->OPTCR, FLASH_OPTCR_OPTLOCK_Msk);
+    }
 }
 /* ------------------------------------------------------------------------- */
