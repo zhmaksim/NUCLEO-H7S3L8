@@ -23,6 +23,7 @@
 #include "flash.h"
 #include "rcc.h"
 #include "gpio.h"
+#include "xspi.h"
 
 /* Private macros ---------------------------------------------------------- */
 
@@ -76,6 +77,7 @@ static void setup_hardware(void)
     rcc_init();
     systick_init(RCC_CPU_CLOCK);
     gpio_init();
+    xspi_init();
 }
 /* ------------------------------------------------------------------------- */
 
