@@ -22,6 +22,7 @@
 #include "pwr.h"
 #include "flash.h"
 #include "rcc.h"
+#include "gpio.h"
 
 /* Private macros ---------------------------------------------------------- */
 
@@ -74,6 +75,7 @@ static void setup_hardware(void)
     flash_init();
     rcc_init();
     systick_init(RCC_CPU_CLOCK);
+    gpio_init();
 }
 /* ------------------------------------------------------------------------- */
 
