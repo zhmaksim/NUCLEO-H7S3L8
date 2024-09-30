@@ -33,6 +33,8 @@ static void gpio_octospi_init(void);
 
 static void gpio_led_init(void);
 
+static void gpio_eth_init(void);
+
 /* Private user code ------------------------------------------------------- */
 
 /**
@@ -45,9 +47,11 @@ void gpio_init(void)
     SET_BIT(RCC->AHB4ENR, RCC_AHB4ENR_GPIOBEN_Msk);
     SET_BIT(RCC->AHB4ENR, RCC_AHB4ENR_GPIODEN_Msk);
     SET_BIT(RCC->AHB4ENR, RCC_AHB4ENR_GPIONEN_Msk);
+    SET_BIT(RCC->AHB4ENR, RCC_AHB4ENR_GPIOGEN_Msk);
 
     gpio_octospi_init();
     gpio_led_init();
+    gpio_eth_init();
 }
 /* ------------------------------------------------------------------------- */
 
@@ -220,5 +224,139 @@ static void gpio_led_init(void)
              | GPIO_PUPDR_PUPD13_Msk,
                0x02 << GPIO_PUPDR_PUPD10_Pos
              | 0x02 << GPIO_PUPDR_PUPD13_Pos);
+}
+/* ------------------------------------------------------------------------- */
+
+/**
+ * @brief           Инициализировать GPIO ETH
+ */
+static void gpio_eth_init(void)
+{
+    /*
+     * RMII REF CLK GPIOB6
+     * RMII MDIO GPIOA2
+     * RMII MDC GPIOG6
+     * RMII CRS DV GPIOA7
+     * RMII RXD0 GPIOG4
+     * RMII RXD1 GPIOG5
+     * RMII TX EN GPIOG11
+     * RMII TXD0 GPIOG13
+     * RMII TXD1 GPIOG12
+     */
+
+
+    /* GPIOA --------------------------------------------------------------- */
+
+    /* Настроить режим работы = AF */
+    MODIFY_REG(GPIOA->MODER,
+               GPIO_MODER_MODE2_Msk
+             | GPIO_MODER_MODE7_Msk,
+               0x02 << GPIO_MODER_MODE2_Pos
+             | 0x02 << GPIO_MODER_MODE7_Pos);
+
+    /* Настроить тип вывода = Push-Pull */
+    CLEAR_BIT(GPIOA->OTYPER,
+              GPIO_OTYPER_OT2_Msk
+            | GPIO_OTYPER_OT7_Msk);
+
+    /* Настроить скорость работы вывода = Very High Speed */
+    SET_BIT(GPIOA->OSPEEDR,
+            GPIO_OSPEEDR_OSPEED2_Msk
+          | GPIO_OSPEEDR_OSPEED7_Msk);
+
+    /* Настроить подтяжку сигнала вывода = No-Pull */
+    CLEAR_BIT(GPIOA->PUPDR,
+              GPIO_PUPDR_PUPD2_Msk
+            | GPIO_PUPDR_PUPD7_Msk);
+
+    /* Настроить альтернативную функцию = 11 */
+    MODIFY_REG(GPIOA->AFR[0],
+               GPIO_AFRL_AFSEL2_Msk
+             | GPIO_AFRL_AFSEL7_Msk,
+               0x0B << GPIO_AFRL_AFSEL2_Pos
+             | 0x0B << GPIO_AFRL_AFSEL7_Pos);
+
+
+    /* GPIOB --------------------------------------------------------------- */
+
+    /* Настроить режим работы = AF */
+    MODIFY_REG(GPIOB->MODER,
+               GPIO_MODER_MODE6_Msk,
+               0x02 << GPIO_MODER_MODE6_Pos);
+
+    /* Настроить тип вывода = Push-Pull */
+    CLEAR_BIT(GPIOB->OTYPER, GPIO_OTYPER_OT6_Msk);
+
+    /* Настроить скорость работы вывода = Very High Speed */
+    SET_BIT(GPIOB->OSPEEDR, GPIO_OSPEEDR_OSPEED6_Msk);
+
+    /* Настроить подтяжку сигнала вывода = No-Pull */
+    CLEAR_BIT(GPIOB->PUPDR, GPIO_PUPDR_PUPD6_Msk);
+
+    /* Настроить альтернативную функцию = 11 */
+    MODIFY_REG(GPIOB->AFR[0],
+               GPIO_AFRL_AFSEL6_Msk,
+               0x0B << GPIO_AFRL_AFSEL6_Pos);
+
+
+    /* GPIOG --------------------------------------------------------------- */
+
+    /* Настроить режим работы = AF */
+    MODIFY_REG(GPIOG->MODER,
+               GPIO_MODER_MODE4_Msk
+             | GPIO_MODER_MODE5_Msk
+             | GPIO_MODER_MODE6_Msk
+             | GPIO_MODER_MODE11_Msk
+             | GPIO_MODER_MODE12_Msk
+             | GPIO_MODER_MODE13_Msk,
+               0x02 << GPIO_MODER_MODE4_Pos
+             | 0x02 << GPIO_MODER_MODE5_Pos
+             | 0x02 << GPIO_MODER_MODE6_Pos
+             | 0x02 << GPIO_MODER_MODE11_Pos
+             | 0x02 << GPIO_MODER_MODE12_Pos
+             | 0x02 << GPIO_MODER_MODE13_Pos);
+
+    /* Настроить тип вывода = Push-Pull */
+    CLEAR_BIT(GPIOG->OTYPER,
+              GPIO_OTYPER_OT4_Msk
+            | GPIO_OTYPER_OT5_Msk
+            | GPIO_OTYPER_OT6_Msk
+            | GPIO_OTYPER_OT11_Msk
+            | GPIO_OTYPER_OT12_Msk
+            | GPIO_OTYPER_OT13_Msk);
+
+    /* Настроить скорость работы вывода = Very High Speed */
+    SET_BIT(GPIOG->OSPEEDR,
+            GPIO_OSPEEDR_OSPEED4_Msk
+          | GPIO_OSPEEDR_OSPEED5_Msk
+          | GPIO_OSPEEDR_OSPEED6_Msk
+          | GPIO_OSPEEDR_OSPEED11_Msk
+          | GPIO_OSPEEDR_OSPEED12_Msk
+          | GPIO_OSPEEDR_OSPEED13_Msk);
+
+    /* Настроить подтяжку сигнала вывода = No-Pull */
+    CLEAR_BIT(GPIOG->PUPDR,
+              GPIO_PUPDR_PUPD4_Msk
+            | GPIO_PUPDR_PUPD5_Msk
+            | GPIO_PUPDR_PUPD6_Msk
+            | GPIO_PUPDR_PUPD11_Msk
+            | GPIO_PUPDR_PUPD12_Msk
+            | GPIO_PUPDR_PUPD13_Msk);
+
+    /* Настроить альтернативную функцию = 11 */
+    MODIFY_REG(GPIOG->AFR[0],
+               GPIO_AFRL_AFSEL4_Msk
+             | GPIO_AFRL_AFSEL5_Msk
+             | GPIO_AFRL_AFSEL6_Msk,
+               0x0B << GPIO_AFRL_AFSEL4_Pos
+             | 0x0B << GPIO_AFRL_AFSEL5_Pos
+             | 0x0B << GPIO_AFRL_AFSEL6_Pos);
+    MODIFY_REG(GPIOG->AFR[1],
+               GPIO_AFRH_AFSEL11_Msk
+             | GPIO_AFRH_AFSEL12_Msk
+             | GPIO_AFRH_AFSEL13_Msk,
+               0x0B << GPIO_AFRH_AFSEL11_Pos
+             | 0x0B << GPIO_AFRH_AFSEL12_Pos
+             | 0x0B << GPIO_AFRH_AFSEL13_Pos);
 }
 /* ------------------------------------------------------------------------- */
