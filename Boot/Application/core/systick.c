@@ -48,9 +48,10 @@ void systick_init(const uint32_t frequency)
     CLEAR_REG(SysTick->VAL);
 
     /* Настроить тактирование от CPU и запустить таймер */
-    WRITE_REG(SysTick->CTRL, SysTick_CTRL_CLKSOURCE_Msk
-                           | SysTick_CTRL_TICKINT_Msk
-                           | SysTick_CTRL_ENABLE_Msk);
+    WRITE_REG(SysTick->CTRL,
+              SysTick_CTRL_CLKSOURCE_Msk
+            | SysTick_CTRL_TICKINT_Msk
+            | SysTick_CTRL_ENABLE_Msk);
 }
 /* ------------------------------------------------------------------------- */
 

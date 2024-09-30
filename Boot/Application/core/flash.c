@@ -34,8 +34,9 @@
 void flash_init(void)
 {
     /* Настроить LATENCY = 7WS и WRHIGHFREQ = 3 */
-    WRITE_REG(FLASH->ACR, 0x07 << FLASH_ACR_LATENCY_Pos
-                        | 0x03 << FLASH_ACR_WRHIGHFREQ_Pos);
+    WRITE_REG(FLASH->ACR,
+              0x07 << FLASH_ACR_LATENCY_Pos
+            | 0x03 << FLASH_ACR_WRHIGHFREQ_Pos);
 
     /* Настроить High Speed Low Voltage для XSPI2 */
     if (!READ_BIT(FLASH->OBW1SR, FLASH_OBW1SR_XSPI2_HSLV_Msk)) {
