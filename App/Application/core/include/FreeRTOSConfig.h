@@ -30,7 +30,7 @@
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION     0
 #define configIDLE_SHOULD_YIELD                     0
 #define configCPU_CLOCK_HZ                          600000000
-#define configTICK_RATE_HZ                          100
+#define configTICK_RATE_HZ                          1000
 #define configMAX_PRIORITIES                        7
 #define configMINIMAL_STACK_SIZE                    256
 #define configMAX_TASK_NAME_LEN                     16

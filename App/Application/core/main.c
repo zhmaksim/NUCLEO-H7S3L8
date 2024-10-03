@@ -18,7 +18,10 @@
 /* Includes ---------------------------------------------------------------- */
 
 #include "main.h"
+#include "systick.h"
+#include "eth.h"
 #include "led.h"
+#include "lan8742.h"
 
 /* Private macros ---------------------------------------------------------- */
 
@@ -38,6 +41,8 @@ static uint32_t appl_idle_hook_counter;
 static void setup_hardware(void);
 
 static void setup_vector_table(void);
+
+static void setup_fpu(void);
 
 static void app_main(void *arg);
 
@@ -62,7 +67,22 @@ void error(void)
 {
     __disable_irq();
 
-    while (true) {}
+    /* Выключить LEDs */
+    led_off(LED_GREEN);
+    led_off(LED_YELLOW);
+    led_off(LED_RED);
+
+    while (true) {
+        /* Задержка */
+        for (uint32_t i = 0; i < 5000; i++) {
+            for (uint32_t j = 0; j < 1000; j++) {
+                __NOP();
+            }
+        }
+
+        /* Переключить состояние LED_RED */
+        led_toggle(LED_RED);
+    }
 }
 /* ------------------------------------------------------------------------- */
 
@@ -71,17 +91,15 @@ static void app_main(void *arg)
     static const TickType_t frequency = pdMS_TO_TICKS(1000);
 
     /* INIT CODE BEGIN ----------------------------------------------------- */
-
+    if (lan8742_init() != LAN8742_STATUS_OK) {
+        error();
+    }
     /* INIT CODE END ------------------------------------------------------- */
 
     TickType_t last_wake_time = xTaskGetTickCount();
 
     while (true) {
         vTaskDelayUntil(&last_wake_time, frequency);
-
-        led_toggle(LED_GREEN);
-        led_toggle(LED_YELLOW);
-        led_toggle(LED_RED);
 
         /* Обновить информацию об используемой памяти FreeRTOS */
         free_heap_size = xPortGetFreeHeapSize();
@@ -100,6 +118,9 @@ void vApplicationIdleHook(void)
 static void setup_hardware(void)
 {
     setup_vector_table();
+    setup_fpu();
+
+    eth_init();
 }
 /* ------------------------------------------------------------------------- */
 
@@ -112,5 +133,11 @@ static void setup_vector_table(void)
 
     __set_PRIMASK(0);
     __enable_irq();
+}
+/* ------------------------------------------------------------------------- */
+
+static void setup_fpu(void)
+{
+    SET_BIT(SCB->CPACR, (0x03 << 20) | (0x03 << 22));
 }
 /* ------------------------------------------------------------------------- */
