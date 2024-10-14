@@ -24,9 +24,16 @@
 
 /* Private constants ------------------------------------------------------- */
 
+const uint32_t CPU_CLOCK = 600000000;
+
 /* Private types ----------------------------------------------------------- */
 
 /* Private variables ------------------------------------------------------- */
+
+/* Параметры отслеживания работы FreeRTOS */
+static size_t free_heap_size;
+static size_t minimum_ever_free_heap_size;
+static uint32_t appl_idle_hook_counter;
 
 /* Private function prototypes --------------------------------------------- */
 
@@ -36,14 +43,22 @@ static void setup_vector_table(void);
 
 static void setup_fpu(void);
 
-static void app_main(void);
+static void app_main(void *arg);
 
 /* Private user code ------------------------------------------------------- */
 
 int main(void)
 {
     setup_hardware();
-    app_main();
+
+    xTaskCreate(app_main,
+                "app_main",
+                configMINIMAL_STACK_SIZE,
+                NULL,
+                tskIDLE_PRIORITY + 1,
+                NULL);
+
+    vTaskStartScheduler();
 }
 /* ------------------------------------------------------------------------- */
 
@@ -56,10 +71,26 @@ void error(void)
 }
 /* ------------------------------------------------------------------------- */
 
-static void app_main(void)
+static void app_main(void * arg)
 {
-    while (true)
-        continue;
+    static const TickType_t frequency = pdMS_TO_TICKS(1000);
+
+    TickType_t last_wake_time = xTaskGetTickCount();
+
+    while (true) {
+        vTaskDelayUntil(&last_wake_time, frequency);
+
+        /* Обновить информацию об используемой памяти FreeRTOS */
+        free_heap_size = xPortGetFreeHeapSize();
+        minimum_ever_free_heap_size = xPortGetMinimumEverFreeHeapSize();
+    }
+}
+/* ------------------------------------------------------------------------- */
+
+void vApplicationIdleHook(void)
+{
+    /* Отслеживание свободного времени FreeRTOS */
+    appl_idle_hook_counter++;
 }
 /* ------------------------------------------------------------------------- */
 
@@ -68,7 +99,7 @@ static void setup_hardware(void)
     setup_vector_table();
     setup_fpu();
 
-    systick_init(64000000);
+    systick_init(CPU_CLOCK);
 }
 /* ------------------------------------------------------------------------- */
 

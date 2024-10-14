@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef MAIN_H_
-#define MAIN_H_
+#ifndef RCC_H_
+#define RCC_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,21 +24,18 @@ extern "C" {
 
 /* Includes ---------------------------------------------------------------- */
 
-#include <stddef.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <assert.h>
-#include "stm32h7rsxx.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
-#include "event_groups.h"
+#include "main.h"
 
 /* Exported macros --------------------------------------------------------- */
 
 /* Exported constants ------------------------------------------------------ */
+
+#define RCC_CPU_CLOCK            600000000
+#define RCC_BUS_MATRIX_CLOCK     (RCC_CPU_CLOCK / 2)
+#define RCC_APB1_CLOCK           (RCC_BUS_MATRIX_CLOCK / 2)
+#define RCC_APB2_CLOCK           (RCC_BUS_MATRIX_CLOCK / 2)
+#define RCC_APB4_CLOCK           (RCC_BUS_MATRIX_CLOCK / 2)
+#define RCC_APB5_CLOCK           (RCC_BUS_MATRIX_CLOCK / 2)
 
 /* Exported types ---------------------------------------------------------- */
 
@@ -46,7 +43,7 @@ extern "C" {
 
 /* Exported function prototypes -------------------------------------------- */
 
-void error(void);
+void rcc_init(void);
 
 /* Exported callback function prototypes ----------------------------------- */
 
@@ -54,4 +51,4 @@ void error(void);
 }
 #endif /* __cplusplus */
 
-#endif /* MAIN_H_ */
+#endif /* RCC_H_ */

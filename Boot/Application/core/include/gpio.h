@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef MAIN_H_
-#define MAIN_H_
+#ifndef GPIO_H_
+#define GPIO_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,17 +24,7 @@ extern "C" {
 
 /* Includes ---------------------------------------------------------------- */
 
-#include <stddef.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <assert.h>
-#include "stm32h7rsxx.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
-#include "event_groups.h"
+#include "main.h"
 
 /* Exported macros --------------------------------------------------------- */
 
@@ -46,7 +36,7 @@ extern "C" {
 
 /* Exported function prototypes -------------------------------------------- */
 
-void error(void);
+void gpio_init(void);
 
 /* Exported callback function prototypes ----------------------------------- */
 
@@ -54,4 +44,4 @@ void error(void);
 }
 #endif /* __cplusplus */
 
-#endif /* MAIN_H_ */
+#endif /* GPIO_H_ */

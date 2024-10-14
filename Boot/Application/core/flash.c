@@ -17,8 +17,7 @@
 
 /* Includes ---------------------------------------------------------------- */
 
-#include "stm32h7s3xx_it.h"
-#include "systick.h"
+#include "flash.h"
 
 /* Private macros ---------------------------------------------------------- */
 
@@ -32,47 +31,37 @@
 
 /* Private user code ------------------------------------------------------- */
 
-void NMI_Handler(void)
+void flash_init(void)
 {
-    error();
-}
-/* ------------------------------------------------------------------------- */
+    /* Настроить LATENCY = 7WS и WRHIGHFREQ = 3 */
+    WRITE_REG(FLASH->ACR,
+              0x07 << FLASH_ACR_LATENCY_Pos
+            | 0x03 << FLASH_ACR_WRHIGHFREQ_Pos);
 
-void HardFault_Handler(void)
-{
-    error();
-}
-/* ------------------------------------------------------------------------- */
+    /* Настроить High Speed Low Voltage для XSPI2 */
+    if (!READ_BIT(FLASH->OBW1SR, FLASH_OBW1SR_XSPI2_HSLV_Msk)) {
+        /* Разблокировать OPTCR */
+        WRITE_REG(FLASH->OPTKEYR, 0x08192A3B);
+        WRITE_REG(FLASH->OPTKEYR, 0x4C5D6E7F);
 
-void MemManage_Handler(void)
-{
-    error();
-}
-/* ------------------------------------------------------------------------- */
+        while (READ_BIT(FLASH->OPTCR, FLASH_OPTCR_OPTLOCK_Msk))
+            continue;
 
-void BusFault_Handler(void)
-{
-    error();
-}
-/* ------------------------------------------------------------------------- */
+        /* Включить запись опций */
+        SET_BIT(FLASH->OPTCR, FLASH_OPTCR_PG_OPT_Msk);
 
-void UsageFault_Handler(void)
-{
-    error();
-}
-/* ------------------------------------------------------------------------- */
+        /* Записать High Speed Low Voltage для XSPI2 */
+        SET_BIT(FLASH->OBW1SRP, FLASH_OBW1SRP_XSPI2_HSLV_Msk);
 
-void SysTick_Handler(void)
-{
-    systick_it_handler();
-}
-/* ------------------------------------------------------------------------- */
+        /* Ожидание завершения записи */
+        while (READ_BIT(FLASH->SR, FLASH_SR_QW_Msk))
+            continue;
 
-void systick_period_elapsed_callback(void)
-{
-    /* Обработать системный таймер FreeRTOS */
-    if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
-        xPortSysTickHandler();
+        /* Выключить запись опций */
+        CLEAR_BIT(FLASH->OPTCR, FLASH_OPTCR_PG_OPT_Msk);
+
+        /* Заблокировать OPTCR */
+        SET_BIT(FLASH->OPTCR, FLASH_OPTCR_OPTLOCK_Msk);
     }
 }
 /* ------------------------------------------------------------------------- */
