@@ -19,6 +19,7 @@
 
 #include "main.h"
 #include "systick.h"
+#include "led.h"
 
 /* Private macros ---------------------------------------------------------- */
 
@@ -79,6 +80,10 @@ static void app_main(void * arg)
 
     while (true) {
         vTaskDelayUntil(&last_wake_time, frequency);
+
+        led_toggle(LED_GREEN);
+        led_toggle(LED_YELLOW);
+        led_toggle(LED_RED);
 
         /* Обновить информацию об используемой памяти FreeRTOS */
         free_heap_size = xPortGetFreeHeapSize();
