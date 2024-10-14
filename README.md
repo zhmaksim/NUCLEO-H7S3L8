@@ -2,7 +2,7 @@
 Знакомство с STM32H7S3 на базе Development Board [NUCLEO-H7S3L8](https://www.st.com/en/evaluation-tools/nucleo-h7s3l8.html)
 
 <p align="center">
-    <img src="./images/nucleo_h7s3l8.png"/>
+    <img src="./Images/nucleo_h7s3l8.png"/>
 </p>
 
 ### [STM32H7S3L8](https://www.st.com/en/microcontrollers-microprocessors/stm32h7s3i8.html)
@@ -18,5 +18,5 @@
 </p>
 <br>
 <p align="center">
-    <img src="./images/stm32h7rs.png"/>
+    <img src="./Images/stm32h7rs.png"/>
 </p>
