@@ -17,81 +17,33 @@
 
 /* Includes ---------------------------------------------------------------- */
 
-#include "main.h"
-#include "systick.h"
-#include "pwr.h"
 #include "flash.h"
 
 /* Private macros ---------------------------------------------------------- */
 
 /* Private constants ------------------------------------------------------- */
 
-#define VTOR_ADDRESS        0x08000000
-
-#define HSI_CLOCK           64000000
-
 /* Private types ----------------------------------------------------------- */
 
 /* Private variables ------------------------------------------------------- */
 
+/* Обработчик FLASH */
+struct flash_handle flash = {
+    .instance = FLASH,
+};
+
 /* Private function prototypes --------------------------------------------- */
-
-static void setup_hardware(void);
-
-static void setup_vector_table(void);
-
-static void setup_fpu(void);
-
-static void app_main(void);
 
 /* Private user code ------------------------------------------------------- */
 
-int main(void)
+/**
+ * @brief           Инициализировать FLASH
+ */
+void flash_init(void)
 {
-    setup_hardware();
-    app_main();
-}
-/* ------------------------------------------------------------------------- */
+    flash.init.latency = FLASH_LATENCY_7WS;
+    flash.init.wrhighfreq = FLASH_WRHIGHFREQ3;
 
-void hal_error_callback(void)
-{
-
-}
-/* ------------------------------------------------------------------------- */
-
-static void app_main(void)
-{
-    while (true) {
-
-    }
-}
-/* ------------------------------------------------------------------------- */
-
-static void setup_hardware(void)
-{
-    setup_vector_table();
-    setup_fpu();
-
-    systick_init(HSI_CLOCK);
-    pwr_init();
-    flash_init();
-}
-/* ------------------------------------------------------------------------- */
-
-static void setup_vector_table(void)
-{
-    __disable_irq();
-    __set_PRIMASK(1);
-
-    WRITE_REG(SCB->VTOR, VTOR_ADDRESS);
-
-    __set_PRIMASK(0);
-    __enable_irq();
-}
-/* ------------------------------------------------------------------------- */
-
-static void setup_fpu(void)
-{
-    SET_BIT(SCB->CPACR, (0x03 << 20) | (0x03 << 22));
+    hal_flash_init(&flash);
 }
 /* ------------------------------------------------------------------------- */
