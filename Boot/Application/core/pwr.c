@@ -17,17 +17,11 @@
 
 /* Includes ---------------------------------------------------------------- */
 
-#include "main.h"
-#include "systick.h"
 #include "pwr.h"
 
 /* Private macros ---------------------------------------------------------- */
 
 /* Private constants ------------------------------------------------------- */
-
-#define VTOR_ADDRESS    0x08000000
-
-#define HSI_CLOCK       64000000
 
 /* Private types ----------------------------------------------------------- */
 
@@ -35,63 +29,21 @@
 
 /* Private function prototypes --------------------------------------------- */
 
-static void setup_hardware(void);
-
-static void setup_vector_table(void);
-
-static void setup_fpu(void);
-
-static void app_main(void);
-
 /* Private user code ------------------------------------------------------- */
 
-int main(void)
+/**
+ * @brief           Инициализировать PWR
+ */
+void pwr_init(void)
 {
-    setup_hardware();
-    app_main();
-}
-/* ------------------------------------------------------------------------- */
-
-void error(void)
-{
-    __disable_irq();
-
-    while (true)
+    /* Настроить Power Supply = LDO */
+    WRITE_REG(PWR->CSR2, 0x02);
+    while (!READ_BIT(PWR->SR1, PWR_SR1_ACTVOSRDY_Msk))
         continue;
-}
-/* ------------------------------------------------------------------------- */
 
-static void app_main(void)
-{
-    while (true)
+    /* Настроить VOS = High */
+    SET_BIT(PWR->CSR4, PWR_CSR4_VOS_Msk);
+    while (!READ_BIT(PWR->CSR4, PWR_CSR4_VOSRDY_Msk))
         continue;
-}
-/* ------------------------------------------------------------------------- */
-
-static void setup_hardware(void)
-{
-    setup_vector_table();
-    setup_fpu();
-
-    systick_init(HSI_CLOCK);
-    pwr_init();
-}
-/* ------------------------------------------------------------------------- */
-
-static void setup_vector_table(void)
-{
-    __disable_irq();
-    __set_PRIMASK(1);
-
-    WRITE_REG(SCB->VTOR, VTOR_ADDRESS);
-
-    __set_PRIMASK(0);
-    __enable_irq();
-}
-/* ------------------------------------------------------------------------- */
-
-static void setup_fpu(void)
-{
-    SET_BIT(SCB->CPACR, (0x03 << 20) | (0x03 << 22));
 }
 /* ------------------------------------------------------------------------- */
