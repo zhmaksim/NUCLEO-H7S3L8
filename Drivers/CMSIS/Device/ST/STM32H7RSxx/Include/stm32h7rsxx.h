@@ -145,6 +145,8 @@ typedef enum
 
 #define CLEAR_BIT(REG, BIT)   ((REG) &= ~(BIT))
 
+#define XOR_BIT(REG, BIT)     ((REG) ^= (BIT))
+
 #define READ_BIT(REG, BIT)    ((REG) & (BIT))
 
 #define CLEAR_REG(REG)        ((REG) = (0x0))

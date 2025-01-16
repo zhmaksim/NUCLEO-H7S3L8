@@ -24,6 +24,7 @@
 #include "rcc.h"
 #include "gpio.h"
 #include "xspi.h"
+#include "led.h"
 #include "mx25uw.h"
 
 /* Private macros ---------------------------------------------------------- */
@@ -65,8 +66,15 @@ void error(void)
 {
     __disable_irq();
 
-    while (true)
-        continue;
+    /* Выключить светодиоды */
+    led_off(LED_GREEN);
+    led_off(LED_YELLOW);
+    led_off(LED_RED);
+
+    while (true) {
+        /* Включить красный светодиод - Ошибка */
+        led_on(LED_RED);
+    }
 }
 /* ------------------------------------------------------------------------- */
 
