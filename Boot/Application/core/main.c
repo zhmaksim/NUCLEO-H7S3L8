@@ -21,6 +21,7 @@
 #include "systick.h"
 #include "pwr.h"
 #include "flash.h"
+#include "rcc.h"
 
 /* Private macros ---------------------------------------------------------- */
 
@@ -77,6 +78,8 @@ static void setup_hardware(void)
     systick_init(HSI_CLOCK);
     pwr_init();
     flash_init();
+    rcc_init();
+    systick_init(RCC_CPU_CLOCK);
 }
 /* ------------------------------------------------------------------------- */
 
