@@ -19,6 +19,7 @@
 
 #include "main.h"
 #include "systick.h"
+#include "led.h"
 
 /* Private macros ---------------------------------------------------------- */
 
@@ -28,9 +29,16 @@
 
 #define HSI_CLOCK       64000000
 
+#define CPU_CLOCK       600000000
+
 /* Private types ----------------------------------------------------------- */
 
 /* Private variables ------------------------------------------------------- */
+
+/* FreeRTOS */
+static uint32_t appl_idle_hook_counter;
+static size_t free_heap_size;
+static size_t minimum_ever_free_heap_size;
 
 /* Private function prototypes --------------------------------------------- */
 
@@ -40,14 +48,22 @@ static void setup_vector_table(void);
 
 static void setup_fpu(void);
 
-static void app_main(void);
+static void app_main(void *argv);
 
 /* Private user code ------------------------------------------------------- */
 
 int main(void)
 {
     setup_hardware();
-    app_main();
+
+    xTaskCreate(app_main,
+                "app_main",
+                configMINIMAL_STACK_SIZE * 4,
+                NULL,
+                tskIDLE_PRIORITY + 1,
+                NULL);
+
+    vTaskStartScheduler();
 }
 /* ------------------------------------------------------------------------- */
 
@@ -55,15 +71,42 @@ void error(void)
 {
     __disable_irq();
 
-    while (true)
-        continue;
+    /* Выключить светодиоды */
+    led_off(LED_GREEN);
+    led_off(LED_YELLOW);
+    led_off(LED_RED);
+
+    while (true) {
+        /* Включить красный светодиод - Ошибка */
+        led_on(LED_RED);
+    }
 }
 /* ------------------------------------------------------------------------- */
 
-static void app_main(void)
+static void app_main(void *argv)
 {
-    while (true)
-        continue;
+    static const TickType_t frequency = pdMS_TO_TICKS(1000);
+
+    TickType_t last_wake_time = xTaskGetTickCount();
+
+    while (true) {
+        vTaskDelayUntil(&last_wake_time, frequency);
+
+        /* Включить зеленый светодиод - Работа */
+        led_on(LED_GREEN);
+    }
+
+    vTaskDelete(NULL);
+}
+/* ------------------------------------------------------------------------- */
+
+void vApplicationIdleHook(void)
+{
+    /* Отслеживание свободного времени FreeRTOS */
+    appl_idle_hook_counter++;
+    /* Обновить информацию об используемой памяти FreeRTOS */
+    free_heap_size = xPortGetFreeHeapSize();
+    minimum_ever_free_heap_size = xPortGetMinimumEverFreeHeapSize();
 }
 /* ------------------------------------------------------------------------- */
 
@@ -72,7 +115,7 @@ static void setup_hardware(void)
     setup_vector_table();
     setup_fpu();
 
-    systick_init(HSI_CLOCK);
+    systick_init(CPU_CLOCK);
 }
 /* ------------------------------------------------------------------------- */
 

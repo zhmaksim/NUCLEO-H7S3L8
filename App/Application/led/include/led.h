@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef MAIN_H_
-#define MAIN_H_
+#ifndef LED_H_
+#define LED_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,17 +24,7 @@ extern "C" {
 
 /* Includes ---------------------------------------------------------------- */
 
-#include <stddef.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <assert.h>
-#include "stm32h7rsxx.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "event_groups.h"
-#include "semphr.h"
+#include "main.h"
 
 /* Exported macros --------------------------------------------------------- */
 
@@ -42,11 +32,45 @@ extern "C" {
 
 /* Exported types ---------------------------------------------------------- */
 
+/**
+ * @brief           Определение перечисления идентификаторов светодиодов
+ */
+enum led_id {
+    LED_GREEN,
+    LED_YELLOW,
+    LED_RED,
+    /* --- */
+    LED_NONE = -1,
+};
+
+
+/**
+ * @brief           Определение перечисления состояний светодиода
+ */
+enum led_state {
+    LED_OFF,
+    LED_ON,
+};
+
+
+/**
+ * @brief           Определение структуры данных светодиода
+ */
+struct led {
+    GPIO_TypeDef *gpio;                         /*!< Указатель на стрктуру данных GPIO */
+
+    uint32_t pin;                               /*!< Номер порта ввода-вывода GPIO */
+};
+
 /* Exported variables ------------------------------------------------------ */
 
 /* Exported function prototypes -------------------------------------------- */
 
-void error(void);
+void led_on(int32_t id);
+
+void led_off(int32_t id);
+
+void led_toggle(int32_t id);
 
 /* Exported callback function prototypes ----------------------------------- */
 
@@ -54,4 +78,4 @@ void error(void);
 }
 #endif /* __cplusplus */
 
-#endif /* MAIN_H_ */
+#endif /* LED_H_ */
